@@ -112,7 +112,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if self.ui.isBatchMode.isChecked():
             # batch mode
-
             csvFile = os.path.basename(self.ui.csvPathDisplay.text())
             folder = self.ui.csvPathDisplay.text().replace(csvFile, '')
 
@@ -129,7 +128,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.logger.infoLog(f"Total Barcode Data: [{len(barcodeData)}], "
                                     f"Total Barcode Image: [{len(imageList)}]")
 
-                if len(os.listdir(self.ui.batchSaveDisplay.text())) == len(imageList):
+                generatedImageCnt = 0
+                for image in imageList:
+                    if os.path.isfile(image):
+                        generatedImageCnt += 1
+
+                if generatedImageCnt == len(imageList):
                     self.showPopUp(
                         msg=f"ALL Barcode Generated\nfiles saved in [{self.ui.batchSaveDisplay.text()}]"
                     )
@@ -145,12 +149,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 if self.ui.saveAsCheckBox.isChecked():
 
-                    self.logger.infoLog(f"savePath:[{self.ui.saveAsPdfDisplay.text()}], "
+                    pdfFile = os.path.basename(self.ui.saveAsPdfDisplay.text())
+                    pdfRoot = self.ui.saveAsPdfDisplay.text().replace(pdfFile,'')
+
+                    self.logger.infoLog(f"pdfRoot:[{pdfRoot}], pdfFile: [{pdfFile}] "
                                         f"imageList length:[{len(imageList)}]")
 
-                    generator.saveAsPdf(
-                        savePath=self.ui.saveAsPdfDisplay.text(), imageList=imageList, barcodes_per_row=4
-                    )
+                    generator = barcodeGenSvc_OOP.BarcodeGenerate(folder="", inputFile="", outputFile=pdfFile)
+                    generator.saveAsPdf(savePath=pdfRoot, imageList=imageList, barcodes_per_row=4)
 
                     self.logger.infoLog(f"is PDF Created:[{os.path.isfile(self.ui.saveAsPdfDisplay.text())}]")
 
